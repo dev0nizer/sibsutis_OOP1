@@ -1,5 +1,6 @@
 #include <iostream>
 #include "sqlite3.h"
+#include <string>
 
 class Transport{
     public:
@@ -34,9 +35,6 @@ public:
         Seats = tempSeats;
         Price = tempPrice;
         Age = tempAge;
-        char *err = 0;
-        const char* SQL = "INSERT INTO transport (Name, Maxspeed, Horsepower,Seats, Price, Age, CountDoors, Maxheight, Class) VALUES () ";
-        sqlite3_exec(db, SQL, 0,0,&err);
     }
 
     
@@ -64,6 +62,13 @@ public:
     void addCountDoors(int tempCountDoors)
     {
         CountDoors = tempCountDoors;
+    }
+
+    void insertsql(std::string Name, int Maxspeed, int Horsepower, int Seats, int Price, int Age, int CountDoors,sqlite3 *db)
+    {
+        char *err = 0;
+        std::string SQL = "INSERT INTO transport (Name, Maxspeed, Horsepower, Seats, Price, Age,CountDoors) VALUES ('"+ Name+"',"+ std::to_string(Maxspeed) + "," + std::to_string(Horsepower) + "," + std::to_string(Seats) + "," + std::to_string(Price) + "," +std::to_string(Age) + "," +std::to_string(CountDoors)+")";
+        sqlite3_exec(db, SQL.c_str(), 0,0,&err);
     }
 
 };
@@ -98,6 +103,7 @@ int main()
 {
     sqlite3 *db = 0;
     char *err = 0;
+    std::cout << "test";
     if (sqlite3_open("db.sqlite3",&db))
     {
         std::cout << "SQL Error!" << std::endl;
@@ -120,8 +126,8 @@ int main()
         case 1: //create new object
             {
             int subchoice;
-            std::cin >> subchoice;
             std::cout << "Choose type: 1.Car 2.Plane" << std::endl;
+            std::cin >> subchoice;
             std::string tempName;
             int tempMaxspeed, tempHorsepower, tempSeats, tempPrice, tempAge;
             std::cout << "Enter name:" << std::endl;
@@ -145,6 +151,9 @@ int main()
                 Car* temp = new Car();
                 temp->addatributes(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge, db);
                 temp->addCountDoors(tempdoors);
+                std::cout << tempMaxspeed;
+                temp->insertsql(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge, tempdoors, db);
+                std::cout << tempName;
             }
             else if (subchoice == 2)
             {
