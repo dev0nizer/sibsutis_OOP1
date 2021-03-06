@@ -4,7 +4,7 @@
 class Transport{
     public:
     
-    virtual void addatributes(std::string tempName, int tempMaxspeed,int tempHorsepower, int tempSeats, int tempPrice, int tempAge) = 0;
+    virtual void addatributes(std::string tempName, int tempMaxspeed,int tempHorsepower, int tempSeats, int tempPrice, int tempAge,sqlite3 *db) = 0;
 
 };
 
@@ -26,7 +26,7 @@ public:
         Name = Tempname;
     }
 
-    void addatributes(std::string tempName, int tempMaxspeed,int tempHorsepower, int tempSeats, int tempPrice, int tempAge)
+    void addatributes(std::string tempName, int tempMaxspeed,int tempHorsepower, int tempSeats, int tempPrice, int tempAge,sqlite3 *db)
     {
         Name = tempName;
         Maxspeed = tempMaxspeed;
@@ -34,6 +34,9 @@ public:
         Seats = tempSeats;
         Price = tempPrice;
         Age = tempAge;
+        char *err = 0;
+        const char* SQL = "INSERT INTO transport (Name, Maxspeed, Horsepower,Seats, Price, Age, CountDoors, Maxheight, Class) VALUES () ";
+        sqlite3_exec(db, SQL, 0,0,&err);
     }
 
     
@@ -100,12 +103,12 @@ int main()
         std::cout << "SQL Error!" << std::endl;
         return 0;
     }
-    else
-    {
-        const char* SQL = "CREATE TABLE IF NOT EXISTS foo(a,b,c)";
-        sqlite3_exec(db, SQL, 0,0,&err);
-        return 0;
-    }
+    // else
+    // {
+    //     // const char* SQL = "CREATE TABLE IF NOT EXISTS foo(a,b,c)";
+    //     // sqlite3_exec(db, SQL, 0,0,&err);
+    //     return 0;
+    // }
     
     
     while (true)
@@ -140,7 +143,7 @@ int main()
                 std::cout << "Enter doors number" << std::endl;
                 std::cin >> tempdoors;
                 Car* temp = new Car();
-                temp->addatributes(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge);
+                temp->addatributes(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge, db);
                 temp->addCountDoors(tempdoors);
             }
             else if (subchoice == 2)
@@ -149,7 +152,7 @@ int main()
                 std::cout << "Enter plane max height: " << std::endl;
                 std::cin >> tempMaxheight;
                 Plane* temp = new Plane();
-                temp->addatributes(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge);
+                temp->addatributes(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge, db);
                 temp->addMaxheight(tempMaxheight);
             }
             else
