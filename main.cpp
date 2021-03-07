@@ -86,12 +86,12 @@ public:
 
 int callback(void *NotUsed, int argc, char **argv, char **azColName)
 {
+    std::cout << "================" << std::endl;
     try
     {
     for(int i = 0; i < argc; i++)
     {        
         std::cout << azColName[i] << ": " << argv[i] << std::endl;
-        std::cout << "request complete";
     }
     std::cout << std::endl;
     }
@@ -99,6 +99,8 @@ int callback(void *NotUsed, int argc, char **argv, char **azColName)
     {
         std::cout << "Error executing SQL callback" << std::endl;
     }
+    std::cout << "================" << std::endl;
+    std::cout << "Request complete" << std::endl;
     return 0;
 }
 
