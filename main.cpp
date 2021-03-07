@@ -12,7 +12,7 @@ class Transport{
 
 class PassengerTransport : Transport
 {
-private:
+protected:
     std::string Name;
     int Maxspeed;
     int Horsepower;
@@ -43,31 +43,20 @@ public:
 class Car : public PassengerTransport
 {
 private:
-    std::string Name;
-    int Maxspeed;
-    int Horsepower;
-    int Seats;
-    int Price;
-    int Age;
     int CountDoors;
 
 public:
-    Car(){}
-
-    Car(std::string tempName)
-    {
-        Name = tempName;
-    }
+    Car() {}
 
     void addCountDoors(int tempCountDoors)
     {
         CountDoors = tempCountDoors;
     }
 
-    void insertsql(std::string Name, int Maxspeed, int Horsepower, int Seats, int Price, int Age, int CountDoors,sqlite3 *db)
+    void insertsql(sqlite3 *db)
     {
         char *err = 0;
-        std::string SQL = "INSERT INTO transport (Name, Maxspeed, Horsepower, Seats, Price, Age,CountDoors) VALUES ('"+ Name+"',"+ std::to_string(Maxspeed) + "," + std::to_string(Horsepower) + "," + std::to_string(Seats) + "," + std::to_string(Price) + "," +std::to_string(Age) + "," +std::to_string(CountDoors)+")";
+        std::string SQL = "INSERT INTO car (Name, Maxspeed, Horsepower, Seats, Price, Age,CountDoors) VALUES ('"+ Name+"',"+ std::to_string(Maxspeed) + "," + std::to_string(Horsepower) + "," + std::to_string(Seats) + "," + std::to_string(Price) + "," +std::to_string(Age) + "," +std::to_string(CountDoors)+")";
         sqlite3_exec(db, SQL.c_str(), 0,0,&err);
     }
 
@@ -76,39 +65,51 @@ public:
 class Plane : public PassengerTransport
 {
 private:
-    std::string Name;
-    int Maxspeed;
-    int Horsepower;
-    int Seats;
-    int Price;
-    int Age;
     int Maxheight;
 
 public:
     Plane() {}
     
-    Plane (std::string tempName)
-    {
-        Name = tempName;
-    }
 
     void addMaxheight(int tempMaxheight)
     {
         Maxheight = tempMaxheight;
     }
+
+    void insertsql(sqlite3 *db)
+    {
+        char *err = 0;
+        std::string SQL = "INSERT INTO plane (Name, Maxspeed, Horsepower, Seats, Price, Age,Maxheight) VALUES ('"+ Name+"',"+ std::to_string(Maxspeed) + "," + std::to_string(Horsepower) + "," + std::to_string(Seats) + "," + std::to_string(Price) + "," +std::to_string(Age) + "," +std::to_string(Maxheight)+")";
+        sqlite3_exec(db, SQL.c_str(), 0,0,&err);
+    }
 };
 
+int callback(void *NotUsed, int argc, char **argv, char **azColName)
+{
+    std::cout << "================" << std::endl;
+    try
+    {
+    for(int i = 0; i < argc; i++)
+    {        
+        std::cout << azColName[i] << ": " << argv[i] << std::endl;
+    }
+    std::cout << std::endl;
+    }
+    catch(...)
+    {
+        std::cout << "Error executing SQL callback" << std::endl;
+    }
+    std::cout << "================" << std::endl;
+    std::cout << "Request complete" << std::endl;
+    return 0;
+}
 
 int main()
-{
+{   int rc;
     sqlite3 *db = 0;
     char *err = 0;
-    std::cout << "test";
-    if (sqlite3_open("db.sqlite3",&db))
-    {
-        std::cout << "SQL Error!" << std::endl;
-        return 0;
-    }
+    rc = sqlite3_open("db.sqlite3",&db);
+  
     // else
     // {
     //     // const char* SQL = "CREATE TABLE IF NOT EXISTS foo(a,b,c)";
@@ -120,6 +121,7 @@ int main()
     while (true)
     {
         int choice;
+        std::cout << "Menu: 1.Create object 2.Search object 3.Close" << std::endl;
         std::cin >> choice;
         switch (choice)
         {
@@ -150,10 +152,8 @@ int main()
                 std::cin >> tempdoors;
                 Car* temp = new Car();
                 temp->addatributes(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge, db);
-                temp->addCountDoors(tempdoors);
-                std::cout << tempMaxspeed;
-                temp->insertsql(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge, tempdoors, db);
-                std::cout << tempName;
+                temp->addCountDoors(tempdoors);    
+                temp->insertsql(db);
             }
             else if (subchoice == 2)
             {
@@ -163,6 +163,7 @@ int main()
                 Plane* temp = new Plane();
                 temp->addatributes(tempName,tempMaxspeed,tempHorsepower,tempSeats,tempPrice,tempAge, db);
                 temp->addMaxheight(tempMaxheight);
+                temp->insertsql(db);
             }
             else
             {
@@ -172,19 +173,40 @@ int main()
             break;
             }
         case 2:
-            { // select from db.table
+            {   sqlite3_stmt * pStmt;
+                int i, j, coln;
+                int b = 1;
+                char *err = 0;
+                std::string SQL;
+                int selectchoice;
+                std::cout << "Wto iwete?" << std::endl;
+                std::cout << "1. Car" << std::endl;
+                std::cout << "2. Plane" << std::endl;
+                std::cin >> selectchoice;
                 std::cout << "Enter name: " << std::endl;
                 std::string tempName;
                 std::cin >> tempName;
-                //select
-                //if select is 0
+                if (selectchoice == 1)
+                {
+                    SQL = "select * from car where  Name= '"+tempName+"'";
+                    sqlite3_exec(db, SQL.c_str(), callback, 0,&err);
+                }
+                else
+                {
+                    SQL = "select * from plane where  Name= '"+tempName+"'";
+                    sqlite3_exec(db, SQL.c_str(), callback, 0,&err);
+                }
                 break;
             }
-            
+         case 3:
+            {  
+                 exit(0);
+            }
 
         default:
-            
+            std::cout << "Error choosing option" << std::endl;
             break;
         }
     }
 }
+
